@@ -1,0 +1,80 @@
+Variables:
+enum State {ZERO, ONE, F};
+int round;  // round number
+int n;  // number of processes
+Set alive; // set of processes not detected faulty by p
+int faulty;  // possible number of not yet detected faulty processes
+boolean prop;  // proposed value
+State decision;
+Set rcv_prop;  // proposed value received from i in the current round
+Set rcv_dec; // decision value received from i in the current round
+Set c_prop;  // the proposed values as seen by other processes
+Set c_alive;  // the set of alive processes as seen by other processes
+Set c_dec;  // the decided values as seen by other processes
+
+// auxiliary variables
+Set received_Inform;
+Set received_Echo;
+
+Init:
+round = 0;
+// alive = all processes;
+faulty = t;
+decision = F;
+
+Receive:
+on receive <INFORM, prop_i, decision_i> from i:
+	received_Inform.insert(<i, prop_i, decision_i, round>);
+	
+on receive <ECHO, rcv_prop_i, alive_i, rcv_dec_i> from i:
+	received_Echo.insert(<i, rcv_prop_i, alive_i, rcv_dec_i>);
+
+Step:
+if round_p % 2 == 0 then
+{
+	send <INFORM, prop_p, decision_p> to all;
+	for(i = 0; i < n; i++)
+	{
+		if received_Inform.filter(<pid, prop_i, decision_i, r>: pid == i).size == 0 then
+		{
+			rcv_dec.insert(<i, DEAD>);
+			rcv_prop.insert(<i, FALSE>);
+			alive.remove(i);
+			faulty = t - (n - alive.size);
+		}
+		else
+		{
+			let pid, prop_i, decision_i, r = received_Inform.some(<pid, prop_i, decision_i, r>: r == round);
+			
+			rcv_prop.insert(<i, prop_i>);
+			rcv_dec.insert(<i, decision_i>);
+		}
+	}
+}
+if round_p % 2 == 1 then
+{
+	send <ECHO, rcvd_prop, alive, rcv_dec> to all;
+	for(i = 0; i < n; i++)
+	{
+		if received_Echo.filter(<pid, rcv_prop_i, rcv_dec_i>: pid == i).size > 0 then
+		{
+			let pid, rcv_prop_i, alive_i, rcv_dec_i = received_Echo.some(<pid, rcv_prop_i, alive_i, rcv_dec_i>: pid == i);
+			
+			c_prop.insert(<i, rcv_prop_i>);
+			c_alive.insert(<i, alive_i>);
+			c_dec.insert(<i, rcv_dec_i>);
+		}
+		else
+		{
+			c_prop.insert(<i, FALSE>);
+			c_alive.insert(<i, FALSE>);
+			c_dec.insert(<i, F>);
+		}
+	}
+	/*
+	
+	
+	
+	*/
+}
+round++;

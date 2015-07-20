@@ -1,0 +1,337 @@
+DECLARATION
+(SET V)
+(ENUM Decision [YES, UNDEF, NO])
+(INT n)
+(INT id)
+(Decision myDecision)
+(Decision w)
+(INT f)
+(Decision result)
+(SET received_Phase1)
+(SET received_Phase2)
+(BOOL received_phase1_messages)
+(INT sum_yes)
+(INT sum_no)
+(ENUM Phase [Phase0, Phase2, Phase1])
+(Phase p)
+
+INITIALIZATION
+(n = -1)
+(id = -1)
+(f = 2)
+(myDecision = (SOME FROM [YES, NO]))
+(received_phase1_messages = false)
+(p = Phase0)
+FOR ((j = 0) .. (n - 1)) DO (INSERT [j, UNDEF] IN V)
+(sum_yes = 0)
+(sum_no = 0)
+
+RECEIVE
+(ON RECEIVE [MTYPE_A, v_j] FROM j DO (INSERT [j, v_j] IN received_Phase1)(IF ((SIZE OF received_Phase1) >= (n - f)) THEN (received_phase1_messages = true)))
+(ON RECEIVE [MTYPE_B, v_j, w_j] FROM j DO (IF ((SIZE OF (FILTER (SELECT [a, b] WHERE ((a == j) AND (b == UNDEF)))  IN V)) > 0) THEN (REMOVE [j, UNDEF] FROM V)(INSERT [j, v_j] IN V))(INSERT [v_j, w_j, j] IN received_Phase2))
+
+STEP
+(IF (p == Phase0) THEN (SEND [MTYPE_A, myDecision] TO ALL)(p = Phase1))
+(IF (p == Phase1) THEN (IF received_phase1_messages THEN (FOREACH [j, decision] IN received_Phase1 DO (REMOVE [j, UNDEF] FROM V)(INSERT [j, decision] IN V))(FOREACH [j, decision] IN V DO IF (decision == YES) THEN (sum_yes++) ELSE (IF (decision == NO) THEN (sum_no++)))IF (sum_yes > ((SIZE OF V) / 2)) THEN (w = YES) ELSE IF (sum_no > ((SIZE OF V) / 2)) THEN (w = NO) ELSE (w = UNDEF)(SEND [MTYPE_B, myDecision, w] TO ALL)(p = Phase2)))
+(IF (p == Phase2) THEN (sum_yes = 0)(sum_no = 0)(sum_yes = (SIZE OF (FILTER (SELECT [_1, w1, _2] WHERE (w1 == YES))  IN received_Phase2)))(sum_no = (SIZE OF (FILTER (SELECT [_1, w1, _2] WHERE (w1 == NO))  IN received_Phase2)))IF (sum_yes > (n / 2)) THEN (result = YES)(HALT) ELSE (IF (sum_no > (n / 2)) THEN (result = NO)(HALT))(IF ((SIZE OF received_Phase2) == n) THEN (result = UNDEF)(HALT)))
+
+Initial Values of Process 0
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 0
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 1
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 1
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 2
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 2
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 3
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 3
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 4
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 4
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 5
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 5
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 6
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 6
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 7
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 7
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 8
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 8
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Initial Values of Process 9
+f: 2
+result: NULL
+received_phase1_messages: false
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 9
+w: NULL
+received_Phase1: []
+received_Phase2: []
+V: [[0, Decision.UNDEF], [1, Decision.UNDEF], [2, Decision.UNDEF], [3, Decision.UNDEF], [4, Decision.UNDEF], [5, Decision.UNDEF], [6, Decision.UNDEF], [7, Decision.UNDEF], [8, Decision.UNDEF], [9, Decision.UNDEF]]
+p: Phase.Phase0
+sum_no: 0
+
+Resulting Values of Process 5 in Round 148 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 5
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [2, Decision.YES], [4, Decision.YES], [0, Decision.YES], [5, Decision.YES], [8, Decision.NO], [1, Decision.NO], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 3 in Round 153 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 3
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [2, Decision.YES], [4, Decision.YES], [0, Decision.YES], [5, Decision.YES], [8, Decision.NO], [1, Decision.NO], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 4 in Round 154 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 4
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 2 in Round 155 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 2
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 9 in Round 156 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 9
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [2, Decision.YES], [4, Decision.YES], [0, Decision.YES], [3, Decision.NO], [5, Decision.YES], [8, Decision.NO], [1, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 6 in Round 157 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 6
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [2, Decision.YES], [4, Decision.YES], [0, Decision.YES], [3, Decision.NO], [5, Decision.YES], [8, Decision.NO], [9, Decision.YES], [1, Decision.NO], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 7 in Round 158 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 7
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 8 in Round 159 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 8
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [2, Decision.YES], [4, Decision.YES], [0, Decision.YES], [3, Decision.NO], [5, Decision.YES], [8, Decision.NO], [1, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 1 in Round 161 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.NO
+n: 10
+sum_yes: 0
+id: 1
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [2, Decision.YES], [4, Decision.YES], [0, Decision.YES], [3, Decision.NO], [5, Decision.YES], [8, Decision.NO], [1, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+
+Resulting Values of Process 0 in Round 163 (halt)
+f: 2
+result: Decision.UNDEF
+received_phase1_messages: true
+myDecision: Decision.YES
+n: 10
+sum_yes: 0
+id: 0
+w: Decision.UNDEF
+received_Phase1: [[7, Decision.NO], [5, Decision.YES], [8, Decision.NO], [4, Decision.YES], [1, Decision.NO], [0, Decision.YES], [2, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+received_Phase2: [[Decision.NO, Decision.UNDEF, 7], [Decision.YES, Decision.UNDEF, 2], [Decision.YES, Decision.UNDEF, 4], [Decision.YES, Decision.UNDEF, 0], [Decision.NO, Decision.UNDEF, 3], [Decision.YES, Decision.UNDEF, 5], [Decision.NO, Decision.UNDEF, 8], [Decision.YES, Decision.UNDEF, 9], [Decision.NO, Decision.UNDEF, 1], [Decision.YES, Decision.UNDEF, 6]]
+V: [[7, Decision.NO], [2, Decision.YES], [4, Decision.YES], [5, Decision.YES], [8, Decision.NO], [1, Decision.NO], [0, Decision.YES], [3, Decision.NO], [9, Decision.YES], [6, Decision.YES]]
+p: Phase.Phase2
+sum_no: 0
+

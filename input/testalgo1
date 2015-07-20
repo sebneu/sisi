@@ -1,0 +1,38 @@
+Init:
+int i = PID;
+boolean v_i = {FALSE, TRUE};
+boolean w_i;
+int c;
+boolean received_phase_1 = FALSE;
+Set received_messages;
+Set phase2_messages;
+
+Receive:
+on receive <PHASE_1, v_i> from pid:
+       received_messages.add(<v_i, pid>);
+
+on receive <PHASE_1, v_i> from n-f distinct processes:
+	received_phase_1 = TRUE;
+
+on receive <PHASE_2, v_i, w_i> from pid:
+{
+	if  received_messages.contains(<v_i, pid>) then  received_messages.add(<v_i, pid>);
+	phase2_messages.add(<w_i, pid>);
+	foreach <w, p> in phase2_messages
+	{
+		selection = phase2_messages.filter(<w, id>: w == w_i);
+		if selection.size > phase2_messages.size/2 then return = w;
+	}
+}
+
+Step:
+send <PHASE_1, v_i> to all;
+
+if received_phase_1 then
+{
+	c =  received_messages.size;
+	if  c > n/2 then w_i = TRUE;
+	else w_i = FALSE;
+
+	send <PHASE_2, v_i, w_i> to all;
+}

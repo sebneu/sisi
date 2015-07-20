@@ -1,0 +1,117 @@
+Variables:
+Set V;					
+enum Decision {YES, NO, UNDEF};
+int n; 					// number of processes
+int id; 				// process id
+
+Decision myDecision; 	// decision of this process
+Decision w;				// majority of received messages in phase 1
+int f; 					// number of faulty processes
+Decision result;
+
+// aux variables
+Set received_Phase1;	// collecting the msgs during phase 1
+Set received_Phase2;	// collecting the msgs during phase 2
+boolean received_phase1_messages;	// trigger for n–f msgs
+int sum_yes;
+int sum_no;
+
+// dealing with phases
+enum Phase {Phase0,Phase1,Phase2};
+Phase p;
+
+Init:
+n = ProcCount; // PROC_COUNT
+id = ProcId; // PROC_ID
+f = 2;
+myDecision = [YES, NO].some();	// non-det initialization
+received_phase1_messages = FALSE;
+p = Phase0;
+for(j = 0..n-1)
+{
+	V.insert(<j, UNDEF>);
+}
+sum_yes = 0;
+sum_no = 0;
+
+Receive:
+on receive <MTYPE_A, v_j> from j:
+{
+	received_Phase1.insert(<j, v_j>);
+	if received_Phase1.size >= n - f then
+		received_phase1_messages = TRUE;
+}
+on receive <MTYPE_B, v_j, w_j> from j:
+{
+	if V.filter(<a, b>: (a == j) and (b == UNDEF)).size > 0 then
+	{
+		V.remove(<j, UNDEF>);
+		V.insert(<j, v_j>);
+	}
+	received_Phase2.insert(<v_j, w_j, j>);
+}
+
+Step:
+// special phase for sending myDecision to all processes
+if p == Phase0 then
+{
+	send <MTYPE_A, myDecision> to all;
+	p = Phase1;
+}
+
+if p == Phase1 then
+{
+	if received_phase1_messages then
+	{
+		foreach <j, decision> in received_Phase1
+		{
+			V.remove(<j, UNDEF>);
+			V.insert(<j, decision>);
+		}
+		
+		// estimate of the decision?
+		foreach <j, decision> in V
+		{
+			if decision == YES then
+				sum_yes++;
+			else if decision == NO then
+				sum_no++;
+		}
+		if sum_yes > V.size/2 then
+			w = YES;
+		else if sum_no > V.size/2 then
+			w = NO;
+		else 
+			w = UNDEF;
+			
+		// start phase 2
+		send <MTYPE_B, myDecision, w> to all;
+		p = Phase2;
+	}
+}
+
+if p == Phase2 then
+{
+	// msgs with same w delivered from a majority of proc.
+	sum_yes = 0;
+	sum_no = 0;
+	sum_yes = received_Phase2.filter(<_1,w1,_2>: w1 == YES).size;
+	sum_no = received_Phase2.filter(<_1,w1,_2>: w1 == NO).size;
+	
+	if sum_yes > n/2 then
+	{
+		result = YES;
+		halt;
+	}
+	else if sum_no > n/2 then
+	{
+		result = NO;
+		halt;
+	}
+	
+	if received_Phase2.size == n then
+	{
+		result = UNDEF;
+		halt;
+	}
+}
